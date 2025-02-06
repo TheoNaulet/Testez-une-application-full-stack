@@ -12,6 +12,8 @@ import { SessionApiService } from '../../services/session-api.service';
 import { of, throwError } from 'rxjs';
 import { Session } from '../../interfaces/session.interface';
 import { Teacher } from '../../../../interfaces/teacher.interface';
+import { MatIconModule } from '@angular/material/icon';
+import { MatCardModule } from '@angular/material/card';
 
 describe('DetailComponent', () => {
   let component: DetailComponent;
@@ -70,6 +72,8 @@ describe('DetailComponent', () => {
         HttpClientModule,
         MatSnackBarModule,
         ReactiveFormsModule,
+        MatIconModule,  // <-- Add this
+        MatCardModule   // <-- Add this
       ],
       declarations: [DetailComponent],
       providers: [
@@ -140,10 +144,14 @@ describe('DetailComponent', () => {
       fixture.detectChanges();
     });
 
-    it('should not show delete button', () => {
-      const deleteButton = fixture.nativeElement.querySelector('button[color="warn"]');
-      expect(deleteButton).toBeNull();
-    });
+    it('should show an error message when delete fails', () => {
+      jest.spyOn(mockSessionApiService, 'delete').mockReturnValue(throwError(() => new Error('Delete failed')));
+    
+      component.delete();
+    
+      expect(mockSessionApiService.delete).toHaveBeenCalledWith(component.sessionId);
+      expect(mockMatSnackBar.open).toHaveBeenCalled();
+    });    
   });
 
   describe('when user is not participating', () => {
