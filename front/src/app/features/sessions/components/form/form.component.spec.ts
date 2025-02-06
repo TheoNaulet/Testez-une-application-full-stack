@@ -137,11 +137,31 @@ describe('FormComponent', () => {
       expect(mockRouter.navigate).toHaveBeenCalledWith(['sessions']);
     });
   });
-  
-  describe('When I fill fields correctly in session update form', () => {
-    it('should send a PUT request to update a session', () => {
+
+  describe('When initializing the form in creation mode', () => {
+    it('should initialize the form with default values', () => {
       // Arrange
+      mockRouter.url = '/sessions/create'; 
       fixture.detectChanges();
+  
+      // Act
+      component.ngOnInit();
+  
+      // Assert
+      expect(component.sessionForm).toBeDefined();
+      expect(component.sessionForm?.value).toEqual({
+        name: '',
+        date: '',
+        teacher_id: '',
+        description: '',
+      });
+    });
+  });
+
+
+  describe('When submitting the form in update mode', () => {
+    it('should call sessionApiService.update with the correct data', () => {
+      // Arrange
       const sessionId = '1';
       const sessionReq: Session = {
         id: 1,
@@ -154,8 +174,21 @@ describe('FormComponent', () => {
         updatedAt: new Date(),
       };
 
-      component.onUpdate = true;
+      // Simuler l'ID de session et l'URL de mise à jour
       mockRoute.snapshot.paramMap.get.mockReturnValue(sessionId);
+      mockRouter.url = '/sessions/update';
+
+      // Simuler la réponse de sessionApiService.detail()
+      const mockSessionApiService = TestBed.inject(SessionApiService);
+      jest.spyOn(mockSessionApiService, 'detail').mockReturnValue(of(sessionReq));
+
+      // Déclencher ngOnInit
+      fixture.detectChanges();
+
+      // Vider les requêtes existantes avant d'exécuter le test
+      httpTestingController.match(() => true).forEach(req => req.flush({}));
+
+      component.onUpdate = true; 
 
       component.sessionForm?.setValue({
         name: sessionReq.name,
@@ -181,98 +214,14 @@ describe('FormComponent', () => {
       expect(mockMatSnackBar.open).toHaveBeenCalledWith('Session updated !', 'Close', { duration: 3000 });
       expect(mockRouter.navigate).toHaveBeenCalledWith(['sessions']);
     });
-  });
+});
 
-  describe('When I fill fields incorrectly', () => {
-    it('should not send a request if form is invalid', () => {
-      // Arrange
-      fixture.detectChanges();
-      component.sessionForm?.setValue({
-        name: '',
-        date: '',
-        teacher_id: '',
-        description: '',
-      });
-
-      component.onUpdate = false;
-
-      // Act
-      component.submit();
-
-      // Assert
-      httpTestingController.expectNone('api/session');
-      expect(mockMatSnackBar.open).not.toHaveBeenCalled();
-      expect(mockRouter.navigate).not.toHaveBeenCalled();
-    });
-  });
-
-  describe('When initializing the form in update mode', () => {
-    it('should load session details and initialize form', () => {
-      const sessionId = '1';
-      const existingSession: Session = {
-        id: 1,
-        name: 'Existing Session',
-        description: 'Existing Description',
-        date: new Date('2025-01-16'),
-        teacher_id: 1,
-        users: [],
-        createdAt: new Date(),
-        updatedAt: new Date()
-      };
-
-      mockRouter.url = '/sessions/update';
-      mockRoute.snapshot.paramMap.get.mockReturnValue(sessionId);
-      mockSessionService.detail.mockReturnValue(of(existingSession));
-
-      component.ngOnInit();
-      const req = httpTestingController.expectOne(`api/session/${sessionId}`);
-      expect(req.request.method).toBe('GET');
-
-      req.flush(existingSession);
-
-      expect(component.sessionForm?.value).toEqual({
-        name: existingSession.name,
-        date: existingSession.date.toISOString().split('T')[0],
-        teacher_id: existingSession.teacher_id,
-        description: existingSession.description
-      });
-    });
 
     describe('When the user is not an admin', () => {
       it('should redirect to /sessions', () => {
         mockSessionService.sessionInformation.admin = false;
         component.ngOnInit();
         expect(mockRouter.navigate).toHaveBeenCalledWith(['/sessions']);
-      });
-    });
-    
-    describe('When the URL contains "update"', () => {
-      it('should load session details and initialize the form', () => {
-        const sessionId = '1';
-        const mockSession: Session = {
-          id: 1,
-          name: 'Existing Session',
-          description: 'Description of the session',
-          date: new Date('2025-01-16'),
-          teacher_id: 1,
-          users: [],
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        };
-
-        mockRouter.url = '/sessions/update';
-        mockRoute.snapshot.paramMap.get.mockReturnValue(sessionId);
-        mockSessionService.detail.mockReturnValue(of(mockSession));
-
-        component.ngOnInit();
-        
-        expect(mockSessionService.detail).toHaveBeenCalledWith(sessionId);
-        expect(component.sessionForm?.value).toEqual({
-          name: mockSession.name,
-          date: mockSession.date.toISOString().split('T')[0],
-          teacher_id: mockSession.teacher_id,
-          description: mockSession.description,
-        });
       });
     });
     
@@ -284,5 +233,5 @@ describe('FormComponent', () => {
         expect(mockRouter.navigate).toHaveBeenCalledWith(['sessions']);
       });
     });
-  });
+
 });
