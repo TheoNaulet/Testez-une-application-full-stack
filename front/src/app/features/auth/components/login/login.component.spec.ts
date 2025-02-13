@@ -48,47 +48,60 @@ describe('LoginComponent', () => {
   });
 
   it('should disable the submit button if the form is invalid', () => {
-    const form = component.form;
-  
+    const form = component.form; // Get the form instance
+
+    // Ensure the form is invalid
     expect(form.valid).toBeFalsy();
-  
+
+    // Select the submit button
     const submitButton = fixture.nativeElement.querySelector('button[type="submit"]');
+
+    // Verify that the submit button is disabled when the form is invalid
     expect(submitButton.disabled).toBeTruthy(); 
   });
 
   it('should log in successfully with valid credentials', () => {
-    const authService = TestBed.inject(AuthService);
-    const sessionService = TestBed.inject(SessionService);
-    const router = TestBed.inject(Router);
-  
-    jest.spyOn(router, 'navigate').mockImplementation(() => Promise.resolve(true));
-  
-    const mockSessionInformation: SessionInformation = {
-      token: 'fake-jwt-token',
-      type: 'Bearer',
-      id: 1,
-      username: 'testuser',
-      firstName: 'Test',
-      lastName: 'User',
-      admin: false
-    };
-  
-    jest.spyOn(authService, 'login').mockReturnValue(of(mockSessionInformation)); 
-    jest.spyOn(sessionService, 'logIn'); 
-  
-    component.form.controls['email'].setValue('test@example.com');
-    component.form.controls['password'].setValue('password123');
-  
-    // Appelle la méthode submit
-    component.submit();
-  
-    expect(authService.login).toHaveBeenCalledWith({
-      email: 'test@example.com',
-      password: 'password123'
-    });
-  
-    expect(sessionService.logIn).toHaveBeenCalledWith(mockSessionInformation);
-  
-    expect(router.navigate).toHaveBeenCalledWith(['/sessions']);
+      // Inject required services
+      const authService = TestBed.inject(AuthService);
+      const sessionService = TestBed.inject(SessionService);
+      const router = TestBed.inject(Router);
+
+      // Mock router navigation to return a resolved promise
+      jest.spyOn(router, 'navigate').mockImplementation(() => Promise.resolve(true));
+
+      // Mock session information that will be returned after a successful login
+      const mockSessionInformation: SessionInformation = {
+        token: 'fake-jwt-token',
+        type: 'Bearer',
+        id: 1,
+        username: 'testuser',
+        firstName: 'Test',
+        lastName: 'User',
+        admin: false
+      };
+
+      // Spy on the login method and return a mock session
+      jest.spyOn(authService, 'login').mockReturnValue(of(mockSessionInformation)); 
+      jest.spyOn(sessionService, 'logIn'); // Spy on the session login method
+
+      // Set valid credentials in the form
+      component.form.controls['email'].setValue('test@example.com');
+      component.form.controls['password'].setValue('password123');
+
+      // Call the submit method
+      component.submit();
+
+      // Ensure the login method is called with the correct credentials
+      expect(authService.login).toHaveBeenCalledWith({
+        email: 'test@example.com',
+        password: 'password123'
+      });
+
+      // Ensure sessionService.logIn() is called with the mock session information
+      expect(sessionService.logIn).toHaveBeenCalledWith(mockSessionInformation);
+
+      // Verify that the user is redirected to the sessions page after login
+      expect(router.navigate).toHaveBeenCalledWith(['/sessions']);
   });
+
 });

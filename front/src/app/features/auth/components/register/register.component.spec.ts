@@ -42,51 +42,63 @@ describe('RegisterComponent', () => {
   });
 
   it('should create an account successfully and redirect to login', () => {
+    // Inject required services
     const authService = TestBed.inject(AuthService);
     const router = TestBed.inject(Router);
-  
+
+    // Mock the register method to simulate a successful registration (returns an observable of undefined)
     jest.spyOn(authService, 'register').mockReturnValue(of(undefined));
-  
+
+    // Mock router navigation to prevent actual redirection
     jest.spyOn(router, 'navigate').mockImplementation(() => Promise.resolve(true));
-  
+
+    // Set valid user details in the form fields
     component.form.controls['email'].setValue('test@example.com');
     component.form.controls['password'].setValue('password123');
     component.form.controls['firstName'].setValue('Test');
     component.form.controls['lastName'].setValue('User');
-  
+
+    // Call the submit method (which triggers the registration process)
     component.submit();
-  
+
+    // Verify that authService.register() was called with the correct user details
     expect(authService.register).toHaveBeenCalledWith({
       email: 'test@example.com',
       password: 'password123',
       firstName: 'Test',
       lastName: 'User'
     });
-  
+
+    // Verify that the user is redirected to the login page after successful registration
     expect(router.navigate).toHaveBeenCalledWith(['/login']);
   });
 
   it('should display an error message if account creation fails', () => {
-    const authService = TestBed.inject(AuthService);
-  
-    jest.spyOn(authService, 'register').mockReturnValue(
-      throwError(() => new Error('Email already exists'))
-    );
-  
+      // Inject the authentication service
+      const authService = TestBed.inject(AuthService);
 
-    component.form.controls['email'].setValue('existing@example.com');
-    component.form.controls['password'].setValue('password123');
-    component.form.controls['firstName'].setValue('Test');
-    component.form.controls['lastName'].setValue('User');
-  
+      // Mock the register method to simulate a failed registration attempt (throws an error)
+      jest.spyOn(authService, 'register').mockReturnValue(
+        throwError(() => new Error('Email already exists'))
+      );
 
-    component.submit();
-    fixture.detectChanges();
-  
+      // Set user details in the form fields (using an already existing email)
+      component.form.controls['email'].setValue('existing@example.com');
+      component.form.controls['password'].setValue('password123');
+      component.form.controls['firstName'].setValue('Test');
+      component.form.controls['lastName'].setValue('User');
 
-    const errorMessage = fixture.nativeElement.querySelector('.error');
-    expect(errorMessage).toBeTruthy(); 
-    expect(errorMessage.textContent).toContain('An error occurred'); 
+      // Call the submit method (which triggers the registration process)
+      component.submit();
+      
+      // Trigger change detection to update the view
+      fixture.detectChanges();
+
+      // Select the error message element from the DOM
+      const errorMessage = fixture.nativeElement.querySelector('.error');
+
+      // Ensure that the error message is displayed
+      expect(errorMessage).toBeTruthy(); 
+      expect(errorMessage.textContent).toContain('An error occurred'); 
   });
-  
 });

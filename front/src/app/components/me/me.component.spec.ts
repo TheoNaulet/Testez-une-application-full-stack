@@ -72,20 +72,20 @@ describe('MeComponent', () => {
   });
 
   it('should delete the user, show a notification, log out, and redirect to home', () => {
-    // Spy sur les méthodes utilisées
-    const deleteSpy = jest.spyOn(userService, 'delete').mockReturnValue(of({}));
-    const snackBarSpy = jest.spyOn(snackBar, 'open');
-    const logOutSpy = jest.spyOn(mockSessionService, 'logOut');
-    const navigateSpy = jest.spyOn(router, 'navigate');
+    // Spy on the methods being used
+    const deleteSpy = jest.spyOn(userService, 'delete').mockReturnValue(of({})); // Mock user deletion
+    const snackBarSpy = jest.spyOn(snackBar, 'open'); // Mock notification display
+    const logOutSpy = jest.spyOn(mockSessionService, 'logOut'); // Mock logout function
+    const navigateSpy = jest.spyOn(router, 'navigate'); // Mock navigation function
 
-    // Act : appeler la méthode delete()
+    // Act: Call the delete() method
     component.delete();
 
-    // Assert : Vérifications des appels
-    expect(deleteSpy).toHaveBeenCalledWith(mockSessionService.sessionInformation.id.toString());
-    expect(snackBarSpy).toHaveBeenCalledWith('Your account has been deleted !', 'Close', { duration: 3000 });
-    expect(logOutSpy).toHaveBeenCalled();
-    expect(navigateSpy).toHaveBeenCalledWith(['/']);
+    // Assert: Verify that the expected methods were called with correct arguments
+    expect(deleteSpy).toHaveBeenCalledWith(mockSessionService.sessionInformation.id.toString()); // Ensure delete() is called with the user ID
+    expect(snackBarSpy).toHaveBeenCalledWith('Your account has been deleted !', 'Close', { duration: 3000 }); // Check if the correct notification is displayed
+    expect(logOutSpy).toHaveBeenCalled(); // Ensure logOut() was executed
+    expect(navigateSpy).toHaveBeenCalledWith(['/']); // Verify redirection to the home page
   });
 
 });
