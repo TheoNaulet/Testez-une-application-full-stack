@@ -23,28 +23,28 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
-@ExtendWith(MockitoExtension.class)
+@ExtendWith(MockitoExtension.class) // Enables Mockito support for JUnit 5
 public class SessionServiceTest {
 
     @Mock
-    private SessionRepository sessionRepository;
+    private SessionRepository sessionRepository; // Mock for SessionRepository
 
     @Mock
-    private UserRepository userRepository;
+    private UserRepository userRepository; // Mock for UserRepository
 
     @InjectMocks
-    private SessionService sessionService;
+    private SessionService sessionService; // Injects the mocks into SessionService
 
     private Session session;
     private User user;
 
     @BeforeEach
     public void setUp() {
-        // Initialisation des objets pour les tests
+        // Initialize test objects
         session = new Session();
         session.setId(1L);
         session.setName("Yoga Session");
-        session.setUsers(new ArrayList<>());
+        session.setUsers(new ArrayList<>()); // Initialize user list
 
         user = new User();
         user.setId(1L);
@@ -53,13 +53,13 @@ public class SessionServiceTest {
 
     @Test
     public void testCreate() {
-        // Arrange
+        // Arrange: Mock repository behavior
         when(sessionRepository.save(session)).thenReturn(session);
 
-        // Act
+        // Act: Call the service method
         Session createdSession = sessionService.create(session);
 
-        // Assert
+        // Assert: Check if the session is created correctly
         assertNotNull(createdSession);
         assertEquals(session.getName(), createdSession.getName());
         verify(sessionRepository, times(1)).save(session);
@@ -67,27 +67,27 @@ public class SessionServiceTest {
 
     @Test
     public void testDelete() {
-        // Arrange
+        // Arrange: Mock repository behavior
         doNothing().when(sessionRepository).deleteById(1L);
 
-        // Act
+        // Act: Call the delete method
         sessionService.delete(1L);
 
-        // Assert
+        // Assert: Verify that deleteById was called once
         verify(sessionRepository, times(1)).deleteById(1L);
     }
 
     @Test
     public void testFindAll() {
-        // Arrange
+        // Arrange: Mock repository response
         List<Session> sessions = new ArrayList<>();
         sessions.add(session);
         when(sessionRepository.findAll()).thenReturn(sessions);
 
-        // Act
+        // Act: Call the service method
         List<Session> result = sessionService.findAll();
 
-        // Assert
+        // Assert: Verify that the list contains the expected session
         assertEquals(1, result.size());
         assertEquals(session.getName(), result.get(0).getName());
         verify(sessionRepository, times(1)).findAll();
@@ -95,13 +95,13 @@ public class SessionServiceTest {
 
     @Test
     public void testGetById() {
-        // Arrange
+        // Arrange: Mock repository response
         when(sessionRepository.findById(1L)).thenReturn(Optional.of(session));
 
-        // Act
+        // Act: Call the method
         Session result = sessionService.getById(1L);
 
-        // Assert
+        // Assert: Ensure the session was found
         assertNotNull(result);
         assertEquals(session.getName(), result.getName());
         verify(sessionRepository, times(1)).findById(1L);
@@ -109,30 +109,31 @@ public class SessionServiceTest {
 
     @Test
     public void testGetById_NotFound() {
-        // Arrange
+        // Arrange: Mock empty repository response
         when(sessionRepository.findById(1L)).thenReturn(Optional.empty());
 
-        // Act
+        // Act: Call the method
         Session result = sessionService.getById(1L);
 
-        // Assert
+        // Assert: Ensure null is returned when session is not found
         assertNull(result);
         verify(sessionRepository, times(1)).findById(1L);
     }
 
     @Test
     public void testUpdate() {
-        // Arrange
+        // Arrange: Create updated session object
         Session updatedSession = new Session();
         updatedSession.setId(1L);
         updatedSession.setName("Updated Yoga Session");
 
+        // Mock repository behavior
         when(sessionRepository.save(updatedSession)).thenReturn(updatedSession);
 
-        // Act
+        // Act: Call update method
         Session result = sessionService.update(1L, updatedSession);
 
-        // Assert
+        // Assert: Ensure the update is successful
         assertNotNull(result);
         assertEquals(updatedSession.getName(), result.getName());
         verify(sessionRepository, times(1)).save(updatedSession);
@@ -140,15 +141,15 @@ public class SessionServiceTest {
 
     @Test
     public void testParticipate() {
-        // Arrange
+        // Arrange: Mock session and user repository responses
         when(sessionRepository.findById(1L)).thenReturn(Optional.of(session));
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
         when(sessionRepository.save(session)).thenReturn(session);
 
-        // Act
+        // Act: User participates in the session
         sessionService.participate(1L, 1L);
 
-        // Assert
+        // Assert: Ensure the user is added to the session
         assertTrue(session.getUsers().contains(user));
         verify(sessionRepository, times(1)).findById(1L);
         verify(userRepository, times(1)).findById(1L);
@@ -157,23 +158,23 @@ public class SessionServiceTest {
 
     @Test
     public void testParticipate_SessionNotFound() {
-        // Arrange
+        // Arrange: Mock empty session response
         when(sessionRepository.findById(1L)).thenReturn(Optional.empty());
 
-        // Act & Assert
+        // Act & Assert: Expect NotFoundException
         assertThrows(NotFoundException.class, () -> sessionService.participate(1L, 1L));
         verify(sessionRepository, times(1)).findById(1L);
-        verify(userRepository, times(1)).findById(1L); 
+        verify(userRepository, times(1)).findById(1L);
         verify(sessionRepository, never()).save(any());
     }
 
     @Test
     public void testParticipate_UserNotFound() {
-        // Arrange
+        // Arrange: Mock session exists, but user does not
         when(sessionRepository.findById(1L)).thenReturn(Optional.of(session));
         when(userRepository.findById(1L)).thenReturn(Optional.empty());
 
-        // Act & Assert
+        // Act & Assert: Expect NotFoundException
         assertThrows(NotFoundException.class, () -> sessionService.participate(1L, 1L));
         verify(sessionRepository, times(1)).findById(1L);
         verify(userRepository, times(1)).findById(1L);
@@ -182,12 +183,12 @@ public class SessionServiceTest {
 
     @Test
     public void testParticipate_AlreadyParticipating() {
-        // Arrange
-        session.getUsers().add(user); // L'utilisateur participe déjà
+        // Arrange: User already participating
+        session.getUsers().add(user);
         when(sessionRepository.findById(1L)).thenReturn(Optional.of(session));
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
 
-        // Act & Assert
+        // Act & Assert: Expect BadRequestException
         assertThrows(BadRequestException.class, () -> sessionService.participate(1L, 1L));
         verify(sessionRepository, times(1)).findById(1L);
         verify(userRepository, times(1)).findById(1L);
@@ -196,15 +197,15 @@ public class SessionServiceTest {
 
     @Test
     public void testNoLongerParticipate() {
-        // Arrange
-        session.getUsers().add(user); // L'utilisateur participe
+        // Arrange: User is currently participating
+        session.getUsers().add(user);
         when(sessionRepository.findById(1L)).thenReturn(Optional.of(session));
         when(sessionRepository.save(session)).thenReturn(session);
 
-        // Act
+        // Act: Remove user from session
         sessionService.noLongerParticipate(1L, 1L);
 
-        // Assert
+        // Assert: Ensure user is removed from session
         assertFalse(session.getUsers().contains(user));
         verify(sessionRepository, times(1)).findById(1L);
         verify(sessionRepository, times(1)).save(session);
@@ -212,10 +213,10 @@ public class SessionServiceTest {
 
     @Test
     public void testNoLongerParticipate_SessionNotFound() {
-        // Arrange
+        // Arrange: Mock empty session response
         when(sessionRepository.findById(1L)).thenReturn(Optional.empty());
 
-        // Act & Assert
+        // Act & Assert: Expect NotFoundException
         assertThrows(NotFoundException.class, () -> sessionService.noLongerParticipate(1L, 1L));
         verify(sessionRepository, times(1)).findById(1L);
         verify(sessionRepository, never()).save(any());
@@ -223,10 +224,10 @@ public class SessionServiceTest {
 
     @Test
     public void testNoLongerParticipate_NotParticipating() {
-        // Arrange
+        // Arrange: User is not in the session
         when(sessionRepository.findById(1L)).thenReturn(Optional.of(session));
 
-        // Act & Assert
+        // Act & Assert: Expect BadRequestException
         assertThrows(BadRequestException.class, () -> sessionService.noLongerParticipate(1L, 1L));
         verify(sessionRepository, times(1)).findById(1L);
         verify(sessionRepository, never()).save(any());

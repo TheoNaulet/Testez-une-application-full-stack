@@ -23,19 +23,20 @@ import static org.mockito.Mockito.*;
 public class TeacherControllerTest {
 
     @Mock
-    private TeacherService teacherService;
+    private TeacherService teacherService; // Mocking the TeacherService to simulate interactions with the service layer.
 
     @Mock
-    private TeacherMapper teacherMapper;
+    private TeacherMapper teacherMapper; // Mocking the TeacherMapper to simulate DTO mapping operations.
 
     @InjectMocks
-    private TeacherController teacherController;
+    private TeacherController teacherController; // Injecting mocks into the TeacherController instance to test it in isolation.
 
     private Teacher teacher;
     private final Long teacherId = 1L;
 
     @BeforeEach
-    public void setUp() {
+    public void setUp() { 
+        // This method is executed before each test to initialize a Teacher instance with predefined values.
         teacher = new Teacher();
         teacher.setId(teacherId);
         teacher.setFirstName("John");
@@ -43,7 +44,9 @@ public class TeacherControllerTest {
     }
 
     @Test
-    public void testFindById_TeacherFound() {
+    public void testFindById_TeacherFound() { 
+        // This test verifies that the controller correctly handles a case where a teacher is found in the system.
+        
         // Arrange
         when(teacherService.findById(teacherId)).thenReturn(teacher);
         when(teacherMapper.toDto(teacher)).thenReturn(new com.openclassrooms.starterjwt.dto.TeacherDto());
@@ -58,7 +61,9 @@ public class TeacherControllerTest {
     }
 
     @Test
-    public void testFindById_TeacherNotFound() {
+    public void testFindById_TeacherNotFound() { 
+        // This test ensures that the controller returns a NOT_FOUND response when a teacher is not found.
+
         // Arrange
         when(teacherService.findById(teacherId)).thenReturn(null);
 
@@ -72,7 +77,9 @@ public class TeacherControllerTest {
     }
 
     @Test
-    public void testFindById_InvalidIdFormat() {
+    public void testFindById_InvalidIdFormat() { 
+        // This test ensures that the controller properly handles cases where an invalid teacher ID format is provided.
+
         // Act
         ResponseEntity<?> response = teacherController.findById("invalidId");
 
@@ -83,7 +90,9 @@ public class TeacherControllerTest {
     }
 
     @Test
-    public void testFindAll_TeachersFound() {
+    public void testFindAll_TeachersFound() { 
+        // This test verifies that the controller returns a list of teachers when teachers exist in the system.
+
         // Arrange
         List<Teacher> teachers = Arrays.asList(teacher);
         when(teacherService.findAll()).thenReturn(teachers);
@@ -99,7 +108,9 @@ public class TeacherControllerTest {
     }
 
     @Test
-    public void testFindAll_NoTeachersFound() {
+    public void testFindAll_NoTeachersFound() { 
+        // This test ensures that the controller correctly handles a case where no teachers exist in the system.
+
         // Arrange
         List<Teacher> teachers = Arrays.asList();
         when(teacherService.findAll()).thenReturn(teachers);

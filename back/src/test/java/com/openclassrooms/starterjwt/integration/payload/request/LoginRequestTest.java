@@ -15,71 +15,74 @@ import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@ExtendWith(MockitoExtension.class)
+@ExtendWith(MockitoExtension.class) // Enables Mockito extension for JUnit 5
 public class LoginRequestTest {
 
+    // Create a Validator instance to validate the LoginRequest object
     private final ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
     private final Validator validator = factory.getValidator();
 
     @Test
     public void testLoginRequestValidation_Success() {
-        // Arrange
+        // Arrange: Create a valid LoginRequest object
         LoginRequest loginRequest = new LoginRequest();
         loginRequest.setEmail("test@example.com");
         loginRequest.setPassword("password123");
 
-        // Act
+        // Act: Validate the object
         Set<ConstraintViolation<LoginRequest>> violations = validator.validate(loginRequest);
 
-        // Assert
+        // Assert: Ensure no validation errors are present
         assertTrue(violations.isEmpty(), "No validation errors should be present");
     }
 
     @Test
     public void testLoginRequestValidation_EmailBlank() {
-        // Arrange
+        // Arrange: Create a LoginRequest with a blank email
         LoginRequest loginRequest = new LoginRequest();
         loginRequest.setEmail(""); // Blank email
         loginRequest.setPassword("password123");
 
-        // Act
+        // Act: Validate the object
         Set<ConstraintViolation<LoginRequest>> violations = validator.validate(loginRequest);
 
-        // Assert
+        // Assert: Ensure a validation error is present for the email field
         assertFalse(violations.isEmpty(), "Validation errors should be present for blank email");
         assertEquals(1, violations.size(), "There should be one validation error for blank email");
         ConstraintViolation<LoginRequest> violation = violations.iterator().next();
-        assertEquals("email", violation.getPropertyPath().toString(), "The validation error should be for the email field");
+        assertEquals("email", violation.getPropertyPath().toString(), 
+                "The validation error should be for the email field");
     }
 
     @Test
     public void testLoginRequestValidation_PasswordBlank() {
-        // Arrange
+        // Arrange: Create a LoginRequest with a blank password
         LoginRequest loginRequest = new LoginRequest();
         loginRequest.setEmail("test@example.com");
         loginRequest.setPassword(""); // Blank password
 
-        // Act
+        // Act: Validate the object
         Set<ConstraintViolation<LoginRequest>> violations = validator.validate(loginRequest);
 
-        // Assert
+        // Assert: Ensure a validation error is present for the password field
         assertFalse(violations.isEmpty(), "Validation errors should be present for blank password");
         assertEquals(1, violations.size(), "There should be one validation error for blank password");
         ConstraintViolation<LoginRequest> violation = violations.iterator().next();
-        assertEquals("password", violation.getPropertyPath().toString(), "The validation error should be for the password field");
+        assertEquals("password", violation.getPropertyPath().toString(), 
+                "The validation error should be for the password field");
     }
 
     @Test
     public void testLoginRequestValidation_EmailAndPasswordBlank() {
-        // Arrange
+        // Arrange: Create a LoginRequest with both email and password blank
         LoginRequest loginRequest = new LoginRequest();
         loginRequest.setEmail(""); // Blank email
         loginRequest.setPassword(""); // Blank password
 
-        // Act
+        // Act: Validate the object
         Set<ConstraintViolation<LoginRequest>> violations = validator.validate(loginRequest);
 
-        // Assert
+        // Assert: Ensure validation errors are present for both fields
         assertFalse(violations.isEmpty(), "Validation errors should be present for blank email and password");
         assertEquals(2, violations.size(), "There should be two validation errors for blank email and password");
     }

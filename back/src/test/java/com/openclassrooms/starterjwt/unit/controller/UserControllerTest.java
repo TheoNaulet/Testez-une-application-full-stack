@@ -25,10 +25,10 @@ import static org.mockito.Mockito.*;
 public class UserControllerTest {
 
     @Mock
-    private UserService userService;
+    private UserService userService; // Mocking the UserService to simulate service layer interactions without calling the actual implementation.
 
     @Mock
-    private UserMapper userMapper;
+    private UserMapper userMapper; // Mocking the UserMapper to simulate mapping operations without needing actual DTO transformations.
 
     @InjectMocks
     private UserController userController;
@@ -38,14 +38,14 @@ public class UserControllerTest {
     private final String userEmail = "test@example.com";
 
     @BeforeEach
-    public void setUp() {
+    public void setUp() { // This method is executed before each test to initialize a User instance with predefined values.
         user = new User();
         user.setId(userId);
         user.setEmail(userEmail);
     }
 
     @Test
-    public void testFindById_UserFound() {
+    public void testFindById_UserFound() { // This test verifies that the controller correctly handles a case where a user is found in the system.
         // Arrange
         when(userService.findById(userId)).thenReturn(user);
         when(userMapper.toDto(user)).thenReturn(new com.openclassrooms.starterjwt.dto.UserDto());
@@ -60,7 +60,7 @@ public class UserControllerTest {
     }
 
     @Test
-    public void testFindById_UserNotFound() {
+    public void testFindById_UserNotFound() { // This test checks that the controller returns a NOT_FOUND response when the user is not found in the system.
         // Arrange
         when(userService.findById(userId)).thenReturn(null);
 
@@ -71,11 +71,10 @@ public class UserControllerTest {
         assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
         verify(userService, times(1)).findById(userId);
         verify(userMapper, never()).toDto((User) any());
-
     }
 
     @Test
-    public void testFindById_InvalidIdFormat() {
+    public void testFindById_InvalidIdFormat() { // This test ensures that the controller properly handles cases where an invalid user ID format is provided.
         // Act
         ResponseEntity<?> response = userController.findById("invalidId");
 
@@ -86,7 +85,7 @@ public class UserControllerTest {
     }
 
     @Test
-    public void testDelete_UserFoundAndAuthorized() {
+    public void testDelete_UserFoundAndAuthorized() { // This test verifies that a user with proper authorization can successfully delete their account.
         // Arrange
         when(userService.findById(userId)).thenReturn(user);
 
@@ -110,7 +109,7 @@ public class UserControllerTest {
     }
 
     @Test
-    public void testDelete_UserFoundButUnauthorized() {
+    public void testDelete_UserFoundButUnauthorized() { // This test checks that an unauthorized user cannot delete another user's account.
         // Arrange
         when(userService.findById(userId)).thenReturn(user);
 
@@ -134,7 +133,7 @@ public class UserControllerTest {
     }
 
     @Test
-    public void testDelete_UserNotFound() {
+    public void testDelete_UserNotFound() { // This test ensures that the controller returns a NOT_FOUND response when trying to delete a non-existing user.
         // Arrange
         when(userService.findById(userId)).thenReturn(null);
 
@@ -148,7 +147,7 @@ public class UserControllerTest {
     }
 
     @Test
-    public void testDelete_InvalidIdFormat() {
+    public void testDelete_InvalidIdFormat() { // This test verifies that the controller returns a BAD_REQUEST response when an invalid ID format is provided for deletion.
         // Act
         ResponseEntity<?> response = userController.save("invalidId");
 

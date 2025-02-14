@@ -26,83 +26,85 @@ import static org.mockito.Mockito.*;
 class AuthTokenFilterTest {
 
     @InjectMocks
-    private AuthTokenFilter authTokenFilter;
+    private AuthTokenFilter authTokenFilter; // Injects mocks into AuthTokenFilter
 
     @Mock
-    private JwtUtils jwtUtils;
+    private JwtUtils jwtUtils; // Mock for JWT utility class
 
     @Mock
-    private UserDetailsServiceImpl userDetailsService;
+    private UserDetailsServiceImpl userDetailsService; // Mock for user details service
 
     @Mock
-    private FilterChain filterChain;
+    private FilterChain filterChain; // Mock for servlet filter chain
 
     private MockHttpServletRequest request;
     private MockHttpServletResponse response;
 
     @BeforeEach
     void setUp() {
-        MockitoAnnotations.openMocks(this);
-        request = new MockHttpServletRequest();
-        response = new MockHttpServletResponse();
-        SecurityContextHolder.clearContext();
+        MockitoAnnotations.openMocks(this); // Initializes mocks
+        request = new MockHttpServletRequest(); // Mock HTTP request
+        response = new MockHttpServletResponse(); // Mock HTTP response
+        SecurityContextHolder.clearContext(); // Clear authentication context before each test
     }
 
     @Test
     void doFilter_ValidToken_ShouldAuthenticateUser() throws ServletException, IOException {
-        // Préparer les mocks
+        // Arrange: Prepare mock data
         String token = "validToken";
         String username = "testUser";
-        UserDetails userDetails = new User(username, "password", Collections.emptyList());
+        UserDetails userDetails = new User(username, "password", Collections.emptyList()); // Mock user details
 
-        request.addHeader("Authorization", "Bearer " + token);
+        request.addHeader("Authorization", "Bearer " + token); // Set Authorization header
 
+        // Mock JWT validation and user retrieval behavior
         when(jwtUtils.validateJwtToken(token)).thenReturn(true);
         when(jwtUtils.getUserNameFromJwtToken(token)).thenReturn(username);
         when(userDetailsService.loadUserByUsername(username)).thenReturn(userDetails);
 
-        // Exécuter le filtre via doFilter (qui appelle doFilterInternal)
+        // Act: Execute the filter (calls doFilterInternal)
         authTokenFilter.doFilter(request, response, filterChain);
 
-        // Vérifier que l'utilisateur a été authentifié
+        // Assert: Verify that the user has been authenticated
         UsernamePasswordAuthenticationToken authentication =
             (UsernamePasswordAuthenticationToken) SecurityContextHolder.getContext().getAuthentication();
 
         assert authentication != null;
         assert authentication.getPrincipal().equals(userDetails);
 
-        // Vérifier que le filtre continue son exécution
+        // Verify that the filter continues execution
         verify(filterChain, times(1)).doFilter(request, response);
     }
 
     @Test
     void doFilter_InvalidToken_ShouldNotAuthenticateUser() throws ServletException, IOException {
-        // Préparer les mocks
+        // Arrange: Prepare an invalid token
         String token = "invalidToken";
 
         request.addHeader("Authorization", "Bearer " + token);
 
+        // Mock JWT validation failure
         when(jwtUtils.validateJwtToken(token)).thenReturn(false);
 
-        // Exécuter le filtre
+        // Act: Execute the filter
         authTokenFilter.doFilter(request, response, filterChain);
 
-        // Vérifier que l'utilisateur n'a pas été authentifié
+        // Assert: Ensure authentication context is still null (user not authenticated)
         assert SecurityContextHolder.getContext().getAuthentication() == null;
 
-        // Vérifier que le filtre continue son exécution
+        // Verify that the filter continues execution
         verify(filterChain, times(1)).doFilter(request, response);
     }
 
     @Test
     void doFilter_NoToken_ShouldNotAuthenticateUser() throws ServletException, IOException {
-        // Exécuter le filtre sans token
+        // Act: Execute the filter without a token
         authTokenFilter.doFilter(request, response, filterChain);
 
-        // Vérifier que l'utilisateur n'a pas été authentifié
+        // Assert: Ensure authentication context remains null (no user authentication)
         assert SecurityContextHolder.getContext().getAuthentication() == null;
 
-        // Vérifier que le filtre continue son exécution
+        // Verify that the filter continues execution
         verify(filterChain, times(1)).doFilter(request, response);
     }
 }

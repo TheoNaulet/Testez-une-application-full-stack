@@ -20,14 +20,14 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-@ExtendWith(MockitoExtension.class)
+@ExtendWith(MockitoExtension.class) // Enables Mockito support for JUnit 5
 public class UserDetailsServiceImplTest {
 
     @Mock
-    private UserRepository userRepository;
+    private UserRepository userRepository; // Mock for UserRepository
 
     @InjectMocks
-    private UserDetailsServiceImpl userDetailsService;
+    private UserDetailsServiceImpl userDetailsService; // Injects the mock repository into UserDetailsServiceImpl
 
     private User testUser;
     private final String testEmail = "test@example.com";
@@ -35,7 +35,7 @@ public class UserDetailsServiceImplTest {
 
     @BeforeEach
     void setUp() {
-        // Initialisation d'un utilisateur de test
+        // Initialize a test user
         testUser = new User();
         testUser.setId(1L);
         testUser.setEmail(testEmail);
@@ -48,35 +48,35 @@ public class UserDetailsServiceImplTest {
     }
 
     @Test
-    @DisplayName("Charger un utilisateur par son email - Succès")
+    @DisplayName("Load a user by email - Success")
     void whenUserExists_thenLoadUserByUsernameShouldReturnUserDetails() {
-        // Arrange : Simuler la réponse du repository
+        // Arrange: Mock repository response to return the test user
         when(userRepository.findByEmail(testEmail)).thenReturn(Optional.of(testUser));
 
-        // Act : Appeler la méthode à tester
+        // Act: Call the method to retrieve user details
         UserDetails userDetails = userDetailsService.loadUserByUsername(testEmail);
 
-        // Assert : Vérifier que les détails de l'utilisateur sont corrects
-        assertNotNull(userDetails, "Les détails de l'utilisateur ne devraient pas être null");
-        assertEquals(testUser.getEmail(), userDetails.getUsername(), "L'email de l'utilisateur devrait correspondre");
-        assertEquals(testUser.getPassword(), userDetails.getPassword(), "Le mot de passe de l'utilisateur devrait correspondre");
+        // Assert: Verify that the returned user details are correct
+        assertNotNull(userDetails, "User details should not be null");
+        assertEquals(testUser.getEmail(), userDetails.getUsername(), "User email should match");
+        assertEquals(testUser.getPassword(), userDetails.getPassword(), "User password should match");
 
-        // Vérifier que la méthode du repository a bien été appelée
+        // Verify that the repository method was called once
         verify(userRepository, times(1)).findByEmail(testEmail);
     }
 
     @Test
-    @DisplayName("Charger un utilisateur par son email - Utilisateur non trouvé")
+    @DisplayName("Load a user by email - User not found")
     void whenUserDoesNotExist_thenThrowUsernameNotFoundException() {
-        // Arrange : Simuler une réponse vide du repository
+        // Arrange: Mock repository to return an empty result
         when(userRepository.findByEmail(wrongEmail)).thenReturn(Optional.empty());
 
-        // Act & Assert : Vérifier que l'exception est levée
+        // Act & Assert: Verify that an exception is thrown when the user is not found
         assertThrows(UsernameNotFoundException.class, () -> {
             userDetailsService.loadUserByUsername(wrongEmail);
-        }, "Une exception devrait être levée si l'utilisateur n'existe pas");
+        }, "An exception should be thrown if the user does not exist");
 
-        // Vérifier que la méthode du repository a bien été appelée
+        // Verify that the repository method was called once
         verify(userRepository, times(1)).findByEmail(wrongEmail);
     }
 }

@@ -24,13 +24,15 @@ class SessionTest {
 
     @BeforeEach
     void setUp() {
+        // Initialize validator for testing bean validation constraints
         ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
         validator = factory.getValidator();
     }
 
     @Test
     void shouldCreateSessionWithValidData() {
-        Teacher teacher = new Teacher(); 
+        // GIVEN: Create a teacher and users for the session
+        Teacher teacher = new Teacher();
         teacher.setId(1L);
         teacher.setFirstName("John");
         teacher.setLastName("Doe");
@@ -43,6 +45,7 @@ class SessionTest {
         user2.setId(2L);
         user2.setFirstName("Bob");
 
+        // WHEN: Create a valid session instance
         Session session = Session.builder()
                 .id(100L)
                 .name("Math Class")
@@ -54,6 +57,7 @@ class SessionTest {
                 .updatedAt(LocalDateTime.now())
                 .build();
 
+        // THEN: Validate that the session was created correctly
         assertNotNull(session);
         assertThat(session.getId()).isEqualTo(100L);
         assertThat(session.getName()).isEqualTo("Math Class");
@@ -64,10 +68,13 @@ class SessionTest {
 
     @Test
     void shouldFailValidationWhenFieldsAreInvalid() {
+        // GIVEN: Create a session with missing required fields
         Session session = new Session();
 
+        // WHEN: Validate the session
         Set<ConstraintViolation<Session>> violations = validator.validate(session);
 
+        // THEN: Ensure that there are validation errors
         assertThat(violations).hasSizeGreaterThan(0);
         assertThat(violations.stream().anyMatch(v -> v.getPropertyPath().toString().equals("name"))).isTrue();
         assertThat(violations.stream().anyMatch(v -> v.getPropertyPath().toString().equals("date"))).isTrue();
@@ -76,47 +83,28 @@ class SessionTest {
 
     @Test
     void shouldVerifyEqualsAndHashCode() {
+        // GIVEN: Create three session instances with different IDs
         Session session1 = new Session();
         session1.setId(1L);
-    
+
         Session session2 = new Session();
         session2.setId(1L);
-    
+
         Session session3 = new Session();
         session3.setId(2L);
-    
-        // Test equality
+
+        // THEN: Validate equality and hashCode behavior
         assertThat(session1).isEqualTo(session2);
         assertThat(session1).isNotEqualTo(session3);
-    
-        // Test hashcode
         assertThat(session1.hashCode()).isEqualTo(session2.hashCode());
         assertThat(session1.hashCode()).isNotEqualTo(session3.hashCode());
-    
-        // Test null and different class
         assertThat(session1).isNotEqualTo(null);
         assertThat(session1).isNotEqualTo(new Object());
     }
 
-
-    @Test
-    void shouldTestHashCode() {
-        Session session1 = new Session();
-        session1.setId(1L);
-
-        Session session2 = new Session();
-        session2.setId(1L);
-
-        Session session3 = new Session();
-        session3.setId(2L);
-
-        assertThat(session1.hashCode()).isEqualTo(session2.hashCode());
-
-        assertThat(session1.hashCode()).isNotEqualTo(session3.hashCode());
-    }
-
     @Test
     void shouldTestToStringMethod() {
+        // GIVEN: Create a session instance with sample data
         Session session = new Session();
         session.setId(5L);
         session.setName("Physics Lecture");
@@ -125,8 +113,10 @@ class SessionTest {
         session.setCreatedAt(LocalDateTime.now());
         session.setUpdatedAt(LocalDateTime.now());
 
+        // WHEN: Call toString()
         String sessionString = session.toString();
 
+        // THEN: Validate that key fields are included in the string representation
         assertThat(sessionString).contains("Physics Lecture");
         assertThat(sessionString).contains("Introduction to Physics");
         assertThat(sessionString).contains("id=5");
@@ -134,6 +124,7 @@ class SessionTest {
 
     @Test
     void shouldTestEqualsAndHashCodeForDifferentCases() {
+        // GIVEN: Create session instances for comparison
         Session session1 = new Session();
         session1.setId(1L);
 
@@ -146,40 +137,26 @@ class SessionTest {
         Session sessionNull = null;
         Object otherObject = new Object();
 
-        // Cas 1 : Même instance
-        assertThat(session1.equals(session1)).isTrue();
+        // THEN: Validate equals() behavior
+        assertThat(session1.equals(session1)).isTrue(); // Case 1: Same instance
+        assertThat(session1.equals(sessionNull)).isFalse(); // Case 2: Comparison with null
+        assertThat(session1.equals(otherObject)).isFalse(); // Case 3: Comparison with different class
+        assertThat(session1.equals(session2)).isTrue(); // Case 4: Same ID → should be equal
+        assertThat(session1.equals(session3)).isFalse(); // Case 5: Different IDs → should not be equal
 
-        // Cas 2 : Objet null
-        assertThat(session1.equals(sessionNull)).isFalse();
-
-        // Cas 3 : Différentes classes
-        assertThat(session1.equals(otherObject)).isFalse();
-
-        // Cas 4 : Même ID → doit être égal
-        assertThat(session1.equals(session2)).isTrue();
-
-        // Cas 5 : ID différent → doit être différent
-        assertThat(session1.equals(session3)).isFalse();
-
-        // Cas 6 : ID null dans un des objets → doit être faux
+        // Case 6: One session has a null ID → should not be equal
         Session session4 = new Session();
         session4.setId(null);
         assertThat(session1.equals(session4)).isFalse();
 
-        // Cas 7 : Deux objets avec ID null → doivent être égaux
+        // Case 7: Two sessions with null IDs → should be equal
         Session session5 = new Session();
         Session session6 = new Session();
         assertThat(session5.equals(session6)).isTrue();
 
-        // Tests sur hashCode
-
-        // Cas 8 : Deux objets avec le même ID doivent avoir le même hashCode
-        assertThat(session1.hashCode()).isEqualTo(session2.hashCode());
-
-        // Cas 9 : Deux objets avec des IDs différents doivent avoir des hashCodes différents
-        assertThat(session1.hashCode()).isNotEqualTo(session3.hashCode());
-
-        // Cas 10 : Deux objets avec un ID null doivent avoir le même hashCode
-        assertThat(session5.hashCode()).isEqualTo(session6.hashCode());
+        // Validate hashCode()
+        assertThat(session1.hashCode()).isEqualTo(session2.hashCode()); // Case 8: Same ID → same hashCode
+        assertThat(session1.hashCode()).isNotEqualTo(session3.hashCode()); // Case 9: Different IDs → different hashCodes
+        assertThat(session5.hashCode()).isEqualTo(session6.hashCode()); // Case 10: Both null IDs → same hashCode
     }
 }

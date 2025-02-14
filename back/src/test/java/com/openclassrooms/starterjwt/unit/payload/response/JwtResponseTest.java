@@ -10,10 +10,10 @@ class JwtResponseTest {
 
     @Test
     void jwtResponse_ShouldSetAllFieldsCorrectly() {
-        // GIVEN : Création d'un objet JwtResponse
+        // GIVEN: Create an instance of JwtResponse with initial values
         JwtResponse jwtResponse = new JwtResponse("initialToken", 2L, "initialUser", "InitialFirst", "InitialLast", false);
 
-        // WHEN : Modification des valeurs via les setters
+        // WHEN: Modify values using setters
         jwtResponse.setToken("testToken");
         jwtResponse.setId(1L);
         jwtResponse.setType("Bearer");
@@ -22,7 +22,7 @@ class JwtResponseTest {
         jwtResponse.setLastName("Doe");
         jwtResponse.setAdmin(true);
 
-        // THEN : Vérification des valeurs
+        // THEN: Verify that all values were updated correctly
         assertThat(jwtResponse.getToken()).isEqualTo("testToken");
         assertThat(jwtResponse.getType()).isEqualTo("Bearer");
         assertThat(jwtResponse.getId()).isEqualTo(1L);

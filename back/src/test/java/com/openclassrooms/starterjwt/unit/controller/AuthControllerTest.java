@@ -28,55 +28,59 @@ import com.openclassrooms.starterjwt.security.jwt.JwtUtils;
 import com.openclassrooms.starterjwt.security.services.UserDetailsImpl;
 import com.openclassrooms.starterjwt.controllers.AuthController;
 
-@ExtendWith(MockitoExtension.class)
+@ExtendWith(MockitoExtension.class) // Enables Mockito extension for unit testing
 public class AuthControllerTest {
 
     @Mock
-    private AuthenticationManager authenticationManager;
+    private AuthenticationManager authenticationManager; // Mocking the authentication manager
 
     @Mock
-    private JwtUtils jwtUtils;
+    private JwtUtils jwtUtils; // Mocking the JWT utility class
 
     @Mock
-    private PasswordEncoder passwordEncoder;
+    private PasswordEncoder passwordEncoder; // Mocking the password encoder
 
     @Mock
-    private UserRepository userRepository;
+    private UserRepository userRepository; // Mocking the user repository
 
     @InjectMocks
-    private AuthController authController;
+    private AuthController authController; // Injecting mocks into the AuthController
 
     @BeforeEach
     public void setUp() {
-        // Réinitialiser le contexte de sécurité avant chaque test
+        // Clear the security context before each test to ensure test isolation
         SecurityContextHolder.clearContext();
     }
 
-    // Test pour la méthode authenticateUser
+    // Test for the authenticateUser method (successful authentication)
     @Test
     public void testAuthenticateUser_Success() {
-        // Given
+        // Given: Create a mock login request
         LoginRequest loginRequest = new LoginRequest();
         loginRequest.setEmail("yoga@studio.com");
         loginRequest.setPassword("Mypassword8$");
 
+        // Create a mock user details object
         UserDetailsImpl userDetails = new UserDetailsImpl(
                 1L, "yoga@studio.com", "John", "Doe", false, "password");
 
+        // Mock authentication
         Authentication authentication = new UsernamePasswordAuthenticationToken(userDetails, null);
         when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))
                 .thenReturn(authentication);
 
+        // Mock JWT token generation
         when(jwtUtils.generateJwtToken(authentication)).thenReturn("fake-jwt-token");
 
+        // Mock finding the user in the repository
         User user = new User();
         user.setAdmin(false);
         when(userRepository.findByEmail("yoga@studio.com")).thenReturn(java.util.Optional.of(user));
 
-        // When
+        // When: Call the authenticateUser method
         ResponseEntity<?> response = authController.authenticateUser(loginRequest);
 
-        // Then
+        // Then: Verify the response
         assertEquals(HttpStatus.OK, response.getStatusCode());
         JwtResponse jwtResponse = (JwtResponse) response.getBody();
         assertEquals("yoga@studio.com", jwtResponse.getUsername());
@@ -84,43 +88,45 @@ public class AuthControllerTest {
         assertEquals(false, jwtResponse.getAdmin());
     }
 
-    // Test pour la méthode registerUser (cas réussi)
+    // Test for the registerUser method (successful registration)
     @Test
     public void testRegisterUser_Success() {
-        // Given
+        // Given: Create a mock signup request
         SignupRequest signUpRequest = new SignupRequest();
         signUpRequest.setEmail("newuser@studio.com");
         signUpRequest.setFirstName("New");
         signUpRequest.setLastName("User");
         signUpRequest.setPassword("password");
 
+        // Mock user repository behavior (email does not exist)
         when(userRepository.existsByEmail("newuser@studio.com")).thenReturn(false);
         when(passwordEncoder.encode("password")).thenReturn("encoded-password");
 
-        // When
+        // When: Call the registerUser method
         ResponseEntity<?> response = authController.registerUser(signUpRequest);
 
-        // Then
+        // Then: Verify the response
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals("User registered successfully!", ((MessageResponse) response.getBody()).getMessage());
     }
 
-    // Test pour la méthode registerUser (cas d'échec : email déjà existant)
+    // Test for the registerUser method (failure case: email already exists)
     @Test
     public void testRegisterUser_EmailAlreadyExists() {
-        // Given
+        // Given: Create a mock signup request with an existing email
         SignupRequest signUpRequest = new SignupRequest();
         signUpRequest.setEmail("existing@studio.com");
         signUpRequest.setFirstName("Existing");
         signUpRequest.setLastName("User");
         signUpRequest.setPassword("password");
 
+        // Mock user repository behavior (email already exists)
         when(userRepository.existsByEmail("existing@studio.com")).thenReturn(true);
 
-        // When
+        // When: Call the registerUser method
         ResponseEntity<?> response = authController.registerUser(signUpRequest);
 
-        // Then
+        // Then: Verify the response
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
         assertEquals("Error: Email is already taken!", ((MessageResponse) response.getBody()).getMessage());
     }

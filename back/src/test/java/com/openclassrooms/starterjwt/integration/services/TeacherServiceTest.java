@@ -14,20 +14,20 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@ActiveProfiles("test")
-@SpringBootTest
-@Transactional
+@ActiveProfiles("test") // Specifies that the test profile is being used
+@SpringBootTest // Loads the full application context for integration testing
+@Transactional // Ensures that tests are rolled back after execution
 public class TeacherServiceTest {
 
     @Autowired
-    private TeacherService teacherService;
+    private TeacherService teacherService; // Injecting the TeacherService
 
     @Autowired
-    private TeacherRepository teacherRepository;
-
+    private TeacherRepository teacherRepository; // Injecting the TeacherRepository
 
     @Test
     void testFindAll() {
+        // Arrange: Create and save two teacher entities in the database
         Teacher teacher1 = Teacher.builder()
                 .lastName("André")
                 .firstName("John")
@@ -43,29 +43,29 @@ public class TeacherServiceTest {
         teacherRepository.save(teacher1);
         teacherRepository.save(teacher2);
 
-        // Act: Récupérer tous les enseignants
+        // Act: Retrieve all teachers
         List<Teacher> teachers = teacherService.findAll();
 
-        // Assert: Vérifier que les enseignants sont bien retournés
+        // Assert: Verify that both teachers are returned
         assertThat(teachers).hasSize(2);
         assertThat(teachers).extracting(Teacher::getLastName).contains("André", "Smith");
     }
 
     @Test
     void testFindByIdExistingTeacher() {
-        // Arrange: Ajouter un enseignant dans la base de données
+        // Arrange: Add a teacher to the database
         Teacher teacher = Teacher.builder()
                 .lastName("André")
                 .firstName("Gauthier")
                 .createdAt(LocalDateTime.now())
                 .updatedAt(LocalDateTime.now())
                 .build();
-        teacher = teacherRepository.save(teacher);
+        teacher = teacherRepository.save(teacher); // Save and retrieve the persisted entity
 
-        // Act: Récupérer l'enseignant par ID
+        // Act: Retrieve the teacher by ID
         Teacher result = teacherService.findById(teacher.getId());
 
-        // Assert: Vérifier que l'enseignant est bien retourné
+        // Assert: Verify that the teacher is returned correctly
         assertThat(result).isNotNull();
         assertThat(result.getLastName()).isEqualTo("André");
         assertThat(result.getFirstName()).isEqualTo("Gauthier");
@@ -73,10 +73,10 @@ public class TeacherServiceTest {
 
     @Test
     void testFindByIdNonExistingTeacher() {
-        // Act: Essayer de récupérer un enseignant avec un ID inexistant
+        // Act: Try to retrieve a teacher with a non-existing ID
         Teacher result = teacherService.findById(999L);
 
-        // Assert: Vérifier que le résultat est null
+        // Assert: Verify that the result is null
         assertThat(result).isNull();
     }
 }

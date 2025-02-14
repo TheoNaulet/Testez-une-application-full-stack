@@ -30,21 +30,6 @@ public class UserServiceTest {
         user.setEmail("user@example.com");
     }
 
-
-    // //MARCHE PAS 
-    // @Test
-    // public void testDelete() {
-    //     // Arrange
-    //     User savedUser = userRepository.save(user); 
-    //     assertNotNull(savedUser.getId());
-    
-    //     // Act
-    //     userService.delete(savedUser.getId()); 
-    
-    //     // Assert
-    //     assertFalse(userRepository.findById(savedUser.getId()).isPresent());
-    // }
-
     @Test
     public void testFindById() {
         // Arrange

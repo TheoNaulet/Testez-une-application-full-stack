@@ -14,15 +14,15 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@SpringBootTest
+@SpringBootTest // Loads the Spring context for testing the mapper
 public class TeacherMapperTest {
 
     @Autowired
-    private TeacherMapper teacherMapper;
+    private TeacherMapper teacherMapper; // Injects the TeacherMapper instance
 
     @Test
     void shouldMapTeacherDtoToEntity() {
-        // Arrange
+        // GIVEN: A TeacherDto instance
         TeacherDto teacherDto = new TeacherDto();
         teacherDto.setId(1L);
         teacherDto.setFirstName("John");
@@ -30,10 +30,10 @@ public class TeacherMapperTest {
         teacherDto.setCreatedAt(LocalDateTime.now());
         teacherDto.setUpdatedAt(LocalDateTime.now());
 
-        // Act
+        // WHEN: Mapping from DTO to Entity
         Teacher teacher = teacherMapper.toEntity(teacherDto);
 
-        // Assert
+        // THEN: Validate the mapping result
         assertThat(teacher).isNotNull();
         assertThat(teacher.getId()).isEqualTo(teacherDto.getId());
         assertThat(teacher.getFirstName()).isEqualTo(teacherDto.getFirstName());
@@ -44,7 +44,7 @@ public class TeacherMapperTest {
 
     @Test
     void shouldMapTeacherToDto() {
-        // Arrange
+        // GIVEN: A Teacher instance
         Teacher teacher = new Teacher();
         teacher.setId(1L);
         teacher.setFirstName("Jane");
@@ -52,10 +52,10 @@ public class TeacherMapperTest {
         teacher.setCreatedAt(LocalDateTime.now());
         teacher.setUpdatedAt(LocalDateTime.now());
 
-        // Act
+        // WHEN: Mapping from Entity to DTO
         TeacherDto teacherDto = teacherMapper.toDto(teacher);
 
-        // Assert
+        // THEN: Validate the mapping result
         assertThat(teacherDto).isNotNull();
         assertThat(teacherDto.getId()).isEqualTo(teacher.getId());
         assertThat(teacherDto.getFirstName()).isEqualTo(teacher.getFirstName());
@@ -66,7 +66,7 @@ public class TeacherMapperTest {
 
     @Test
     void shouldMapTeacherDtoListToEntityList() {
-        // Arrange
+        // GIVEN: A list of TeacherDto instances
         TeacherDto teacherDto = new TeacherDto();
         teacherDto.setId(3L);
         teacherDto.setFirstName("firstname");
@@ -75,10 +75,10 @@ public class TeacherMapperTest {
         List<TeacherDto> teacherDtoList = new ArrayList<>();
         teacherDtoList.add(teacherDto);
 
-        // Act
+        // WHEN: Mapping from DTO list to Entity list
         List<Teacher> teacherList = teacherMapper.toEntity(teacherDtoList);
 
-        // Assert
+        // THEN: Validate the mapping result
         assertThat(teacherList).isNotNull();
         assertThat(teacherList).hasSize(1);
         assertThat(teacherList.get(0).getId()).isEqualTo(teacherDtoList.get(0).getId());
@@ -86,7 +86,7 @@ public class TeacherMapperTest {
 
     @Test
     void shouldMapTeacherEntityListToDtoList() {
-        // Arrange
+        // GIVEN: A list of Teacher entities
         Teacher teacher = new Teacher();
         teacher.setId(3L);
         teacher.setFirstName("firstname");
@@ -95,10 +95,10 @@ public class TeacherMapperTest {
         List<Teacher> teacherList = new ArrayList<>();
         teacherList.add(teacher);
 
-        // Act
+        // WHEN: Mapping from Entity list to DTO list
         List<TeacherDto> teacherDtoList = teacherMapper.toDto(teacherList);
 
-        // Assert
+        // THEN: Validate the mapping result
         assertThat(teacherDtoList).isNotNull();
         assertThat(teacherDtoList).hasSize(1);
         assertThat(teacherDtoList.get(0).getId()).isEqualTo(teacherList.get(0).getId());
@@ -106,13 +106,13 @@ public class TeacherMapperTest {
 
     @Test
     void shouldMapTeacherDtoWithNullFieldsToEntity() {
-        // Arrange
+        // GIVEN: A TeacherDto instance with null fields
         TeacherDto teacherDto = new TeacherDto();
 
-        // Act
+        // WHEN: Mapping to Entity
         Teacher teacher = teacherMapper.toEntity(teacherDto);
 
-        // Assert
+        // THEN: Validate that the entity has null values
         assertThat(teacher).isNotNull();
         assertThat(teacher.getId()).isNull();
         assertThat(teacher.getFirstName()).isNull();
@@ -123,13 +123,13 @@ public class TeacherMapperTest {
 
     @Test
     void shouldMapTeacherWithNullFieldsToDto() {
-        // Arrange
+        // GIVEN: A Teacher instance with null fields
         Teacher teacher = new Teacher();
 
-        // Act
+        // WHEN: Mapping to DTO
         TeacherDto teacherDto = teacherMapper.toDto(teacher);
 
-        // Assert
+        // THEN: Validate that the DTO has null values
         assertThat(teacherDto).isNotNull();
         assertThat(teacherDto.getId()).isNull();
         assertThat(teacherDto.getFirstName()).isNull();
@@ -138,46 +138,51 @@ public class TeacherMapperTest {
         assertThat(teacherDto.getUpdatedAt()).isNull();
     }
 
-    // ✅ Test conversion liste vide
     @Test
     void shouldReturnEmptyList_WhenMappingEmptyDtoListToEntityList() {
-        // Arrange
+        // GIVEN: An empty list of TeacherDto
         List<TeacherDto> emptyList = Collections.emptyList();
 
-        // Act
+        // WHEN: Mapping to Entity list
         List<Teacher> teacherList = teacherMapper.toEntity(emptyList);
 
-        // Assert
+        // THEN: Validate that the result is an empty list
         assertThat(teacherList).isNotNull().isEmpty();
     }
 
     @Test
     void shouldReturnEmptyList_WhenMappingEmptyEntityListToDtoList() {
-        // Arrange
+        // GIVEN: An empty list of Teacher entities
         List<Teacher> emptyList = Collections.emptyList();
 
-        // Act
+        // WHEN: Mapping to DTO list
         List<TeacherDto> teacherDtoList = teacherMapper.toDto(emptyList);
 
-        // Assert
+        // THEN: Validate that the result is an empty list
         assertThat(teacherDtoList).isNotNull().isEmpty();
     }
 
     @Test
     void shouldReturnNull_WhenMappingNullDtoListToEntityList() {
-        // Act
-        List<Teacher> teacherList = teacherMapper.toEntity((List<TeacherDto>) null);
+        // GIVEN: A null list of DTOs
+        List<TeacherDto> dtoList = null;
 
-        // Assert
+        // WHEN: Mapping to Entity list
+        List<Teacher> teacherList = teacherMapper.toEntity(dtoList);
+
+        // THEN: Validate that the result is null
         assertThat(teacherList).isNull();
     }
 
     @Test
     void shouldReturnNull_WhenMappingNullEntityListToDtoList() {
-        // Act
-        List<TeacherDto> teacherDtoList = teacherMapper.toDto((List<Teacher>) null);
+        // GIVEN: A null list of Entities
+        List<Teacher> entityList = null;
 
-        // Assert
+        // WHEN: Mapping to DTO list
+        List<TeacherDto> teacherDtoList = teacherMapper.toDto(entityList);
+
+        // THEN: Validate that the result is null
         assertThat(teacherDtoList).isNull();
     }
 }
